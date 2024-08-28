@@ -18,6 +18,8 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      script-file: ${{ steps.publishid.outputs.script-file }}
     steps:
       - name: Get code
         uses: actions/checkout@v3
@@ -30,10 +32,15 @@ jobs:
         with:
           name: dist-files
           path: dist
+      - name: Publish JS filename
+        run: find dist/assets/*.js -type f -execdir echo 'script-file={}' >> $GITHUB_OUTPUT ';'
+        id: publishid
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Output filename
+        run: echo "${{ needs.build.outputs.script-file }}"
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
